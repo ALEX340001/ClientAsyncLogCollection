@@ -1,0 +1,21 @@
+{
+  "Domain": "corp.groupmegapolis.ru", 
+  "Format": "Json", //xml,json,txt
+
+  "DefaultFolderPath": "", // путь куда ложится файл по умолчанию
+  "UserFolderPath":"",      // путь который ввел пользователь для складирования файлов
+
+  "TimeWorkScript":"12:00", // время выполнения скрипта 
+
+
+
+  // сервисы которые будут мониторится и собираться статистику
+  "EnabledApplications":[ 
+	 "AdobeReader",
+    "Chrome",
+    "Edge",
+  ],
+
+  "Flags":"" // LogAlways (0), Critical (1), Error (2), Warning (3), Informational (4).
+
+}

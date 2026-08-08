@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="utils\MyLogger\**" />
+    <EmbeddedResource Remove="utils\MyLogger\**" />
+    <None Remove="utils\MyLogger\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+	  <PackageReference Include="CommandLineParser" Version="2.9.1" />
+	  <PackageReference Include="System.Diagnostics.EventLog" Version="10.0.8" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MyLogger\MyLogger.csproj" />
+  </ItemGroup>
+
+</Project>
