@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Генератор конфигурации — ClientAsyncLogCollection</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="generator.css">
+    <script src="../loadTopBottom.js"></script>
+
+</head>
+<body>
+<div class="container">
+  <nav id="nav-placeholder"></nav>
+
+    <h1>🔧 Генератор конфигурации</h1>
+    <p>Заполните поля и нажмите кнопку, чтобы скопировать готовую команду запуска или содержимое <code>appsettings.json</code> в буфер обмена.</p>
+
+    <div class="generator">
+        <div class="form-group">
+            <label>Исполняемый файл</label>
+            <input type="text" id="exe-name" value="ClientAsyncLogCollection.exe" style="width:100%; padding: 8px; border-radius: 8px; border: 1px solid #ccc;">
+        </div>
+
+        <div class="form-group">
+            <label>Название конфигурации (произвольное)</label>
+            <input type="text" id="configname" placeholder="MyConfig" style="width:100%; padding: 8px; border-radius: 8px; border: 1px solid #ccc;">
+        </div>
+
+        <div class="form-group">
+            <label>Провайдеры</label>
+            <div id="providers-container">
+                <div class="provider-row">
+                    <input type="text" placeholder="Имя провайдера" class="provider-name" value=".NET Runtime">
+                    <select class="provider-log">
+                        <option value="Application">Application</option>
+                        <option value="System">System</option>
+                        <option value="Security">Security</option>
+                        <option value="__custom__">Другой...</option>
+                    </select>
+                    <input type="text" class="provider-log-custom" placeholder="Свой журнал" style="display:none; width:120px;">
+                    <button class="btn btn-small remove-provider" style="display:none;">✕</button>
+                </div>
+            </div>
+            <button class="btn btn-small" id="add-provider">+ Добавить провайдера</button>
+        </div>
+
+        <div class="form-group">
+            <label>Уровни событий (Flags)</label>
+            <div class="flag-group">
+                <label><input type="checkbox" class="flag" value="1" checked> Critical</label>
+                <label><input type="checkbox" class="flag" value="2" checked> Error</label>
+                <label><input type="checkbox" class="flag" value="3" checked> Warning</label>
+                <label><input type="checkbox" class="flag" value="4"> Information</label>
+                <label><input type="checkbox" class="flag" value="5"> Verbose</label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Формат вывода</label>
+            <select id="format" style="padding: 8px; border-radius: 8px; width:100%;">
+                <option value="json">JSON</option>
+                <option value="xml">XML</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Папка по умолчанию (DefaultFolderPath)</label>
+            <input type="text" id="defaultfolder" placeholder="C:\Logs\MyApp" style="width:100%; padding: 8px; border-radius: 8px; border: 1px solid #ccc;">
+        </div>
+
+        <div class="form-group">
+            <label>Папка пользователя (UserFolderPath)</label>
+            <input type="text" id="userfolder" placeholder="Оставьте пустым, если не нужно" style="width:100%; padding: 8px; border-radius: 8px; border: 1px solid #ccc;">
+        </div>
+
+        <div class="form-group">
+            <label>Глубина сбора (дней) — DaysToCollect</label>
+            <input type="number" id="daystocollect" value="1" min="0" style="width:100%; padding: 8px; border-radius: 8px; border: 1px solid #ccc;">
+        </div>
+
+        <div class="form-group">
+            <label>Часы сканирования провайдеров (ScanHours)</label>
+            <input type="number" id="scanhours" value="168" min="1" style="width:100%; padding: 8px; border-radius: 8px; border: 1px solid #ccc;">
+        </div>
+
+        <div class="form-group">
+            <label><input type="checkbox" id="forceprovider"> ForceProviderRefresh (принудительное обновление кэша)</label>
+        </div>
+
+        <button class="btn" id="generate-cli">📋 Сгенерировать и скопировать CLI</button>
+        <span id="cli-feedback" class="copy-feedback">✅ Команда скопирована</span>
+        <button class="btn" id="generate-json" style="margin-left: 10px;">📄 Сгенерировать и скопировать JSON</button>
+        <span id="json-feedback" class="copy-feedback">✅ JSON скопирован</span>
+
+        <button class="btn" id="download-json" style="margin-left: 10px;">💾 Скачать JSON</button>
+    </div>
+
+  <div id="footer-placeholder"></div>
+</div>
+<script src="loadTopBottom.js"></script>.
+<script src="generator.js"></script>
+</body>
+</html>

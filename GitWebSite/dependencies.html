@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Зависимости — ClientAsyncLogCollection</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="container">
+  <nav id="nav-placeholder"></nav>
+    <h1>📦 Зависимости проекта</h1>
+
+    <h2>Системные требования</h2>
+    <ul>
+        <li><strong>ОС:</strong> Windows 10 / 11, Windows Server 2016+</li>
+        <li><strong>.NET Runtime:</strong> .NET 8.0 (или выше)</li>
+        <li><strong>Права:</strong> для чтения журнала Security требуются права администратора</li>
+    </ul>
+
+    <h2>NuGet‑пакеты</h2>
+    <table>
+        <thead><tr><th>Пакет</th><th>Версия</th><th>Назначение</th></tr></thead>
+        <tbody>
+            <tr><td><code>CommandLineParser</code></td><td>2.9.1</td><td>Разбор аргументов командной строки</td></tr>
+            <tr><td><code>System.Diagnostics.EventLog</code></td><td>...</td><td>Доступ к журналам событий Windows</td></tr>
+            <tr><td><code>System.Text.Json</code></td><td>...</td><td>Сериализация / десериализация JSON</td></tr>
+        </tbody>
+    </table>
+    <div class="note">
+        💡 Точные версии пакетов указаны в файле <code>.csproj</code> проекта.
+    </div>
+
+    <h2>Внешние библиотеки</h2>
+    <p>Проект включает собственную библиотеку логирования <strong>MyLogger</strong> (папка <code>MyLogger</code>), которая реализует интерфейс <code>ILogger</code>, маскирование данных и ротацию логов.</p>
+
+    <div id="footer-placeholder"></div>
+
+
+</div>
+
+   <script src="loadTopBottom.js"></script>
+
+</body>
+</html>

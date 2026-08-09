@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Логирование — ClientAsyncLogCollection</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="container">
+   <nav id="nav-placeholder"></nav>
+
+    <h1>📝 Система логирования</h1>
+    <p>
+        В проекте используется собственная легковесная библиотека <strong>MyLogger</strong> (папка <code>MyLogger_23-03-2026</code>).
+        Она предоставляет интерфейс <code>ILogger</code>, реализацию файлового логгера <code>FileLogger</code>
+        и опциональное маскирование конфиденциальных данных через <code>IDataMasker</code>.
+    </p>
+
+    <h2>🧩 Компоненты</h2>
+    <table>
+        <thead>
+            <tr><th>Класс / Интерфейс</th><th>Назначение</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><code>ILogger</code></td><td>Базовый интерфейс логирования (Debug, Info, Warn, Error)</td></tr>
+            <tr><td><code>FileLogger</code></td><td>Потокобезопасная запись в файлы с автоочисткой и ротацией</td></tr>
+            <tr><td><code>IDataMasker</code></td><td>Интерфейс для маскирования чувствительных данных</td></tr>
+            <tr><td><code>DefaultDataMasker</code></td><td>Стандартная реализация: скрывает токены, IP, пароли, пути</td></tr>
+            <tr><td><code>LoggingOptions</code></td><td>Настройки: уровень, размер файла, срок хранения, маскирование</td></tr>
+            <tr><td><code>LogLevel</code></td><td>Перечисление: Debug, Info, Warn, Error</td></tr>
+        </tbody>
+    </table>
+
+    <h2>⚙️ Настройки логирования</h2>
+    <p>Все параметры задаются через объект <code>LoggingOptions</code>, который передаётся в конструктор <code>FileLogger</code>.</p>
+    <table>
+        <thead>
+            <tr><th>Свойство</th><th>Тип</th><th>По умолчанию</th><th>Описание</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><code>LogDirectory</code></td><td>string</td><td><code>%Documents%\log_app_ClientAsyncLogCollection</code></td><td>Папка для хранения логов</td></tr>
+            <tr><td><code>MinLevel</code></td><td>LogLevel</td><td>Info</td><td>Минимальный уровень записываемых сообщений</td></tr>
+            <tr><td><code>MaxFileSizeMB</code></td><td>int</td><td>10</td><td>Максимальный размер файла до ротации (МБ)</td></tr>
+            <tr><td><code>RetentionDays</code></td><td>int</td><td>30</td><td>Срок хранения логов (дни), старые удаляются</td></tr>
+            <tr><td><code>MaskSensitiveData</code></td><td>bool</td><td>false</td><td>Включить автоматическое маскирование данных</td></tr>
+        </tbody>
+    </table>
+
+    <h2>🔒 Маскирование данных</h2>
+    <p>
+        Если установлен флаг <code>MaskSensitiveData = true</code>, <code>FileLogger</code> пропускает каждое сообщение через реализацию <code>IDataMasker</code>.
+        Стандартный <code>DefaultDataMasker</code> скрывает:
+    </p>
+    <ul>
+        <li>Токены (шестнадцатеричные строки длиннее 8 символов) → <code>***</code></li>
+        <li>IP-адреса → <code>192.168.***.***</code></li>
+        <li>Пароли в конструкциях <code>password=...</code> → <code>password=***</code></li>
+        <li>Локальные пути Windows → <code>C:\***</code></li>
+    </ul>
+    <div class="note">
+        💡 Вы можете реализовать свой <code>IDataMasker</code> и передать его в конструктор <code>FileLogger</code> для кастомизации.
+    </div>
+
+    <h2>📁 Где находятся логи приложения</h2>
+    <p>
+        По умолчанию все логи пишутся в папку пользователя: <code>%USERPROFILE%\Documents\log_app_ClientAsyncLogCollection</code>.
+        Ежедневно создаётся новый файл с именем <code>YYYY-MM-DD_log.txt</code>. При превышении размера файл ротируется (добавляется суффикс <code>.1</code>, <code>.2</code> и т.д.).
+    </p>
+
+    <h2>🛠️ Пример использования в коде</h2>
+    <pre>var options = new LoggingOptions
+{
+    MinLevel = LogLevel.Debug,
+    MaskSensitiveData = true,
+    MaxFileSizeMB = 20,
+    RetentionDays = 14
+};
+
+ILogger logger = new FileLogger(options);
+logger.Info("Приложение запущено");
+logger.Error("Не удалось подключиться к серверу", exception);</pre>
+
+   <div id="footer-placeholder"></div>
+
+   
+</div>
+
+<script src="loadTopBottom.js"></script>
+
+</body>
+</html>
