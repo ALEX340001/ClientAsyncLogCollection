@@ -28,7 +28,7 @@ const fallbackNav = `
 const fallbackFooter = `
 <footer>
     ClientAsyncLogCollection · Гибкий сборщик журналов Windows<br>
-    Документация актуальна на 08.06.2026
+   
 </footer>
 `;
 function loadComponent(id, url, fallback) {
