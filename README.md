@@ -52,7 +52,7 @@
 
 ```json
 {
-  "Domain": "corp.groupmegapolis.ru",
+  "Domain": "corp.mydomen.ru",
   "Format": "Json",
   "DefaultFolderPath": "C:\\Logs",
   "UserFolderPath": "",
