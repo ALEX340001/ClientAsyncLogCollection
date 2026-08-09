@@ -1,0 +1,186 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Разработчикам — ClientAsyncLogCollection</title>
+    <link rel="stylesheet" href="styles.css">
+    <script type="module">
+        import mermaid from 'https:
+        mermaid.initialize({ startOnLoad: true, theme: 'neutral' });
+    </script>
+</head>
+<body>
+<div class="container">
+    <nav id="nav-placeholder"></nav>
+    <h1>🛠️ Информация для разработчиков</h1>
+    <p>
+        Ниже описана внутренняя архитектура утилиты <strong>ClientAsyncLogCollection</strong>.
+        Проект написан на C# (.NET 8) и состоит из трёх основных слоёв:
+        <strong>инфраструктура логирования</strong>, <strong>ядро сбора событий</strong> и <strong>утилиты</strong>.
+    </p>
+    <h2>📦 Общая структура (слои)</h2>
+    <ul>
+        <li><strong>MyLogger</strong> – независимая библиотека для файлового логирования с маскированием.</li>
+        <li><strong>Core</strong> – сбор событий, поиск провайдеров, кэширование, форматирование.</li>
+        <li><strong>Utils</strong> – фабрика логгера, хелперы, валидация, работа с путями.</li>
+    </ul>
+    <h2>🧩 Ключевые классы и интерфейсы</h2>
+    <h3>Ядро приложения</h3>
+    <table>
+        <thead><tr><th>Класс / Интерфейс</th><th>Назначение</th></tr></thead>
+        <tbody>
+            <tr><td><code>Program</code></td><td>Точка входа. Парсит CLI, загружает конфигурацию, запускает сбор логов.</td></tr>
+            <tr><td><code>AppConfig</code></td><td>Загрузка и слияние конфигурации (JSON + CLI). Метод <code>Load</code> реализует приоритет: CLI > JSON > defaults.</td></tr>
+            <tr><td><code>LogRequest</code></td><td>Главный класс сбора. Строит карту журналов, читает Event Log, фильтрует по времени/уровню, вызывает форматтеры. Потокобезопасен (Interlocked).</td></tr>
+            <tr><td><code>LogEventData</code></td><td>Модель события: Id, TimeCreated, ProviderName, LevelDisplayName, Description, RawXml.</td></tr>
+            <tr><td><code>JsonFormater / XmlFormater</code></td><td>Сохранение коллекции событий в файлы с группировкой по папкам провайдеров и уровням.</td></tr>
+        </tbody>
+    </table>
+    <h3>Поиск и кэширование провайдеров</h3>
+    <table>
+        <thead><tr><th>Класс / Интерфейс</th><th>Назначение</th></tr></thead>
+        <tbody>
+            <tr><td><code>IProviderScanner</code></td><td>Сканирует журналы и возвращает словарь (имя провайдера → реальное имя, журнал).</td></tr>
+            <tr><td><code>ProviderScanner</code></td><td>Реализация: просматривает журналы "Application" и "System".</td></tr>
+            <tr><td><code>IProviderCache</code></td><td>Кэширует результаты в JSON. Методы: <code>LoadAsync</code>, <code>SaveAsync</code>, <code>IsStale</code>.</td></tr>
+            <tr><td><code>ProviderCache</code></td><td>Файловый кэш в <code>%LocalAppData%\ClientAsyncLogCollection</code>. Устаревание по возрасту файла.</td></tr>
+            <tr><td><code>ProviderMapper</code></td><td>Связка кэша и сканера. Строит сопоставление с алгоритмом частичного совпадения (наибольшая общая подстрока).</td></tr>
+            <tr><td><code>ProviderMappingResult</code></td><td>Record: RequestedName, RealName, LogName.</td></tr>
+        </tbody>
+    </table>
+    <h3>Вспомогательные утилиты</h3>
+    <table>
+        <thead><tr><th>Класс</th><th>Назначение</th></tr></thead>
+        <tbody>
+            <tr><td><code>LoggerFactory</code></td><td>Предоставляет единый экземпляр <code>FileLogger</code> (Singleton).</td></tr>
+            <tr><td><code>GetLogNameForProvider</code></td><td>Определяет журнал провайдера через <code>ProviderMetadata</code>.</td></tr>
+            <tr><td><code>GetLevelDisplayNameSafe</code></td><td>Безопасное чтение <code>LevelDisplayName</code> с обработкой исключений.</td></tr>
+            <tr><td><code>Check</code></td><td>Консольный ввод и валидация имени компьютера/пользователя.</td></tr>
+            <tr><td><code>InputValidator</code></td><td>Защита от инъекций, проверка формата имён.</td></tr>
+        </tbody>
+    </table>
+    <h3>Библиотека логирования</h3>
+    <table>
+        <thead><tr><th>Компонент</th><th>Описание</th></tr></thead>
+        <tbody>
+            <tr><td><code>ILogger</code></td><td>Интерфейс с методами Debug, Info, Warn, Error.</td></tr>
+            <tr><td><code>FileLogger</code></td><td>Потокобезопасная запись в файлы с ротацией и очисткой. Настраивается через <code>LoggingOptions</code>.</td></tr>
+            <tr><td><code>IDataMasker</code></td><td>Интерфейс маскирования данных.</td></tr>
+            <tr><td><code>DefaultDataMasker</code></td><td>Скрывает токены, IP, пароли, локальные пути.</td></tr>
+            <tr><td><code>LoggingOptions</code></td><td>Свойства: LogDirectory, MinLevel, MaxFileSizeMB, RetentionDays, MaskSensitiveData.</td></tr>
+        </tbody>
+    </table>
+    <h2>🔄 Поток выполнения (основной сценарий)</h2>
+    <div class="mermaid">
+    sequenceDiagram
+        participant User
+        participant Program
+        participant AppConfig
+        participant ProviderMapper
+        participant ProviderCache
+        participant ProviderScanner
+        participant LogRequest
+        participant EventLog
+        participant Formatter
+        User->>Program: запуск с аргументами
+        Program->>AppConfig: Load(cmdOptions)
+        AppConfig-->>Program: config
+        Program->>ProviderMapper: new(cache, scanner)
+        Program->>ProviderMapper: GetMappingAsync(config)
+        ProviderMapper->>ProviderCache: LoadAsync()
+        alt кэш валиден
+            ProviderCache-->>ProviderMapper: mapping
+        else устарел/отсутствует
+            ProviderMapper->>ProviderScanner: ScanAsync(scanHours)
+            ProviderScanner-->>ProviderMapper: realProviders
+            ProviderMapper->>ProviderCache: SaveAsync(mapping)
+        end
+        ProviderMapper-->>Program: providerMap
+        Program->>LogRequest: GetLogAsync(config, providerMap)
+        LogRequest->>LogRequest: построение logProvidersMap
+        loop по каждому журналу
+            LogRequest->>EventLog: запрос событий
+            EventLog-->>LogRequest: EventRecord[]
+            LogRequest->>LogRequest: фильтрация, группировка
+            alt формат JSON
+                LogRequest->>Formatter: JsonFormater.GetFormat(...)
+            else XML
+                LogRequest->>Formatter: XmlFormater.GetFormat(...)
+            end
+        end
+        LogRequest-->>Program: завершено
+    </div>
+    <h2>📊 Архитектурная диаграмма (статические зависимости)</h2>
+    <div class="mermaid">
+    graph TD
+        subgraph Presentation
+            Program
+        end
+        subgraph Core
+            LogRequest
+            JsonFormater
+            XmlFormater
+            ProviderMapper
+            ProviderScanner
+            ProviderCache
+            IProviderScanner
+            IProviderCache
+            LogEventData
+        end
+        subgraph Utils
+            LoggerFactory
+            GetLogNameForProvider
+            GetLevelDisplayNameSafe
+            Check
+            InputValidator
+            AppConfig
+        end
+        subgraph Logging[MyLogger Library]
+            ILogger
+            FileLogger
+            IDataMasker
+            DefaultDataMasker
+            LoggingOptions
+        end
+        Program --> AppConfig
+        Program --> ProviderMapper
+        Program --> LogRequest
+        ProviderMapper --> IProviderCache
+        ProviderMapper --> IProviderScanner
+        ProviderCache --> IProviderCache
+        ProviderScanner --> IProviderScanner
+        LogRequest --> GetLevelDisplayNameSafe
+        LogRequest --> GetLogNameForProvider
+        LogRequest --> JsonFormater
+        LogRequest --> XmlFormater
+        LogRequest --> LoggerFactory
+        JsonFormater --> LoggerFactory
+        XmlFormater --> LoggerFactory
+        ProviderMapper --> LoggerFactory
+        ProviderScanner --> LoggerFactory
+        ProviderCache --> LoggerFactory
+        Check --> InputValidator
+        Check --> LoggerFactory
+        InputValidator --> LoggerFactory
+        FileLogger --> ILogger
+        FileLogger --> IDataMasker
+        DefaultDataMasker --> IDataMasker
+        LoggerFactory --> FileLogger
+        LoggerFactory --> LoggingOptions
+    </div>
+    <h2>🔍 Алгоритм сопоставления провайдеров</h2>
+    <p>
+        <code>ProviderMapper.BuildMapping</code> для каждого запрошенного имени выполняет:
+    </p>
+    <ol>
+        <li><strong>Точное совпадение</strong> – поиск в словаре реальных провайдеров без учёта регистра.</li>
+        <li><strong>Частичное совпадение</strong> – вычисляется длина наибольшей общей подстроки (<em>Longest Common Substring</em>) между запрошенным именем и каждым реальным именем. К результату добавляется бонус 100, если одно имя является префиксом другого. Выбирается кандидат с максимальным счётом.</li>
+        <li><strong>Fallback по первой букве</strong> – если не найдено ни одного кандидата, берётся первый реальный провайдер, имя которого начинается с той же буквы (может быть неточным, поэтому рекомендуется явное указание журнала в конфигурации).</li>
+        <li>Если ничего не подошло – провайдер пропускается с предупреждением в лог.</li>
+    </ol>
+    <div id="footer-placeholder"></div>
+</div>
+<script src="loadTopBottom.js"></script>
+</body>
+</html>

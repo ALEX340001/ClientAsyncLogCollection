@@ -1,0 +1,42 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLI и команды — ClientAsyncLogCollection</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="container">
+    <nav id="nav-placeholder"></nav>
+    <h1>🖥️ CLI и команды</h1>
+    <p>Все параметры командной строки имеют приоритет над настройками из JSON-файла.</p>
+    <h2>Синтаксис</h2>
+    <pre>ClientAsyncLogCollection.exe [options]</pre>
+    <h2>Параметры</h2>
+    <table>
+        <thead><tr><th>Короткий ключ</th><th>Длинный ключ</th><th>Тип</th><th>Описание</th></tr></thead>
+        <tbody>
+            <tr><td><code>-c</code></td><td><code>--config</code></td><td>строка</td><td>Путь к JSON-файлу конфигурации</td></tr>
+            <tr><td><code>-f</code></td><td><code>--format</code></td><td>строка</td><td>Формат вывода: <code>json</code> или <code>xml</code></td></tr>
+            <tr><td>—</td><td><code>--defaultFolder</code></td><td>строка</td><td>Папка по умолчанию для сохранения логов</td></tr>
+            <tr><td>—</td><td><code>--pl</code></td><td>строка</td><td>Папка пользователя (приоритетнее <code>defaultFolder</code>)</td></tr>
+            <tr><td>—</td><td><code>--apps</code></td><td>список</td><td>Список приложений через запятую</td></tr>
+            <tr><td>—</td><td><code>--flags</code></td><td>список</td><td>Уровни событий (1–5) через запятую</td></tr>
+            <tr><td><code>-h</code></td><td><code>--help</code></td><td>—</td><td>Вывод справки</td></tr>
+        </tbody>
+    </table>
+    <h2>Примеры</h2>
+    <pre>
+# Запуск с JSON-конфигом по умолчанию (appsettings.json)
+ClientAsyncLogCollection.exe
+# Указать свой конфиг и папку сохранения
+ClientAsyncLogCollection.exe --config "C:\MyConfigs\custom.json" --pl "D:\Logs"
+# Только командная строка: два провайдера, уровни Error+Warning, формат XML
+ClientAsyncLogCollection.exe --apps "Service Control Manager,.NET Runtime" --flags 2,3 -f xml
+    </pre>
+    <div id="footer-placeholder"></div>
+</div>
+<script src="loadTopBottom.js"></script>
+</body>
+</html>

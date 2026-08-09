@@ -1,0 +1,85 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Конфигурация — ClientAsyncLogCollection</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="container">
+ <nav id="nav-placeholder"></nav>
+    <h1>📄 Конфигурационный файл <code>appsettings.json</code></h1>
+    <p>Приложение <strong>ClientAsyncLogCollection</strong> использует JSON‑файл для задания параметров сбора логов Windows. Файл должен называться <code>appsettings.json</code> и располагаться в папке с исполняемым файлом (или указываться через ключ <code>--config</code>).</p>
+    <h2>📌 Структура JSON</h2>
+    <table>
+        <thead>
+            <tr><th>Поле</th><th>Тип</th><th>Обязательное</th><th>Описание</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><code>Domain</code></td><td>string</td><td>❌ нет</td><td>Домен (служебное поле, не влияет на сбор). Пример: <code>"mydomain.local"</code></td></tr>
+            <tr><td><code>DefaultFolderPath</code></td><td>string</td><td>❌ нет</td><td>Путь к папке, куда будут сохраняться логи, если не указан <code>UserFolderPath</code>.<br>По умолчанию: <code>"Logs"</code> (относительно рабочей папки).</td></tr>
+            <tr><td><code>UserFolderPath</code></td><td>string</td><td>❌ нет</td><td>Альтернативная папка пользователя. Имеет приоритет над <code>DefaultFolderPath</code>. Удобно для переопределения через CLI (<code>--pl</code>).</td></tr>
+            <tr><td><code>Format</code></td><td>string</td><td>❌ нет</td><td>Формат выходных файлов: <code>"json"</code> или <code>"xml"</code>. По умолчанию: <code>"json"</code>.</td></tr>
+            <tr><td><code>EnabledApplications</code></td><td>массив объектов</td><td>✅ да</td><td>Список приложений/провайдеров, логи которых нужно собрать (см. таблицу ниже).</td></tr>
+            <tr><td><code>Flags</code></td><td>массив целых чисел</td><td>❌ нет</td><td>Уровни событий (<strong>Level</strong>): 1=Critical, 2=Error, 3=Warning, 4=Information, 5=Verbose.<br>Пример: <code>[2,3,4]</code> (ошибки, предупреждения, информация). Если массив пустой или отсутствует – не будут читаться вообще никакие события. Рекомендуется указывать явно.</td></tr>
+        </tbody>
+    </table>
+    <h3>📦 Элемент <code>EnabledApplications</code></h3>
+    <p>Каждый элемент массива — объект с двумя полями:</p>
+    <table>
+        <thead><tr><th>Поле</th><th>Тип</th><th>Описание</th></tr></thead>
+        <tbody>
+            <tr><td><code>Name</code></td><td>string</td><td><strong>Точное отображаемое имя</strong> провайдера (как в оснастке eventvwr.msc). Пример: <code>".NET Runtime"</code>, <code>"Service Control Manager"</code>.</td></tr>
+            <tr><td><code>Log</code></td><td>string</td><td>Имя журнала Windows, в котором нужно искать события. <br>Допустимые значения: <code>"Application"</code>, <code>"System"</code>, <code>"Security"</code> (требуются права) и другие. <br><strong>Совет:</strong> указывайте явно, чтобы избежать проблем с автоматическим определением.</td></tr>
+        </tbody>
+    </table>
+    <div class="note">
+        📌 <strong>Примечание:</strong> если поле <code>Log</code> отсутствует или равно <code>null</code>, программа попытается определить журнал автоматически через Windows API (<code>ProviderMetadata</code>). Для многих провайдеров это работает, но для некоторых (например, <code>Kernel-General</code>) автоматика не срабатывает, поэтому настоятельно рекомендуется указывать журнал явно.
+    </div>
+    <h2>📝 Пример готового файла <code>appsettings.json</code></h2>
+    <pre>{
+  "Domain": "corp.domain.com",
+  "DefaultFolderPath": "C:\\Logs\\MyApp",
+  "UserFolderPath": "",
+  "Format": "xml",
+  "EnabledApplications": [
+    { "Name": ".NET Runtime", "Log": "Application" },
+    { "Name": "Service Control Manager", "Log": "System" },
+    { "Name": "Microsoft-Windows-GroupPolicy", "Log": "System" },
+    { "Name": "DNS Client Events", "Log": "Application" },
+    { "Name": "Kernel-General", "Log": "System" }
+  ],
+  "Flags": [2, 3, 4]
+}</pre>
+    <h2>⚙️ Приоритет параметров</h2>
+    <ol>
+        <li><strong>Параметры командной строки</strong> – наивысший приоритет.</li>
+        <li><strong>Значения из JSON‑файла</strong> (если не переопределены).</li>
+        <li><strong>Встроенные значения по умолчанию</strong> (<code>Format = "json"</code>, <code>DefaultFolderPath = "Logs"</code>).</li>
+    </ol>
+    <h2>🖥️ Параметры командной строки (CLI)</h2>
+    <table>
+        <thead><tr><th>Короткий ключ</th><th>Длинный ключ</th><th>Тип</th><th>Описание</th></tr></thead>
+        <tbody>
+            <tr><td><code>-c</code></td><td><code>--config</code></td><td>строка</td><td>Путь к JSON‑файлу конфигурации</td></tr>
+            <tr><td><code>-f</code></td><td><code>--format</code></td><td>строка</td><td>Формат вывода: <code>json</code> или <code>xml</code></td></tr>
+            <tr><td>—</td><td><code>--defaultFolder</code></td><td>строка</td><td>Папка по умолчанию для сохранения логов</td></tr>
+            <tr><td>—</td><td><code>--pl</code></td><td>строка</td><td>Папка пользователя (приоритетнее <code>defaultFolder</code>)</td></tr>
+            <tr><td>—</td><td><code>--apps</code></td><td>список</td><td>Список приложений через запятую (заменяет массив из JSON)</td></tr>
+            <tr><td>—</td><td><code>--flags</code></td><td>список</td><td>Уровни событий (1–5) через запятую</td></tr>
+            <tr><td><code>-h</code></td><td><code>--help</code></td><td>—</td><td>Вывод справки</td></tr>
+        </tbody>
+    </table>
+    <h3>📌 Примеры вызова программы</h3>
+    <pre>
+ClientAsyncLogCollection.exe
+ClientAsyncLogCollection.exe --config "C:\MyConfigs\custom.json"
+ClientAsyncLogCollection.exe -f xml --pl "D:\Logs"
+ClientAsyncLogCollection.exe --apps "Service Control Manager,.NET Runtime" --flags 2,3
+ClientAsyncLogCollection.exe -c "settings.json" --pl "C:\Temp" --flags 4</pre>
+   <div id="footer-placeholder"></div>
+</div>
+<script src="loadTopBottom.js"></script>
+</body>
+</html>
